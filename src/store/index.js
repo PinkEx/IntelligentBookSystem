@@ -176,13 +176,13 @@ const store = new Vuex.Store({
   },
   getters: {
     trendingBooks: state => {
-      return state.books.slice(0, 5);
+      return state.books.slice(0, 10);
     },
     newBooks: state => {
-      return state.books.slice(5, 10);
+      return state.books.slice(10, 20);
     },
     recommendBooks: state => {
-      return state.books.slice(10, 15);
+      return state.books.slice(20, 30);
     }
   }
 })

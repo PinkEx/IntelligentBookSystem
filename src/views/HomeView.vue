@@ -10,10 +10,11 @@
         <p>Whether you are looking for the latest bestsellers or timeless classics, our library has something for every reader.</p>
         <p>Dive into new stories, uncover hidden gems, and expand your horizons with each page you turn.</p>
       </div>
+
       <div class="book-section">
         <h2>Top Trending Books</h2>
-        <div class="books-grid">
-          <div class="book-item" v-for="book in trendingBooks" :key="book.id">
+        <swiper :options="swiperOptions">
+          <swiper-slide class="book-item" v-for="book in trendingBooks" :key="book.id">
             <img :src="book.image" :alt="book.name" class="book-image" />
             <router-link :to="`/book/${book.id}`" class="book-link">
               <h3 class="book-name">{{ book.name }}</h3>
@@ -26,32 +27,44 @@
               <span class="likes-count">{{ book.stars }}</span>
               <span class="heart">❤️</span>
             </div>
-          </div>
-        </div>
+          </swiper-slide>
+          <div class="swiper-pagination" slot="pagination"></div>
+          <div class="swiper-button-next" slot="button-next"></div>
+          <div class="swiper-button-prev" slot="button-prev"></div>
+        </swiper>
       </div>
+
       <div class="book-section">
         <h2>New Arrivals</h2>
-        <div class="books-grid">
-          <div class="book-item" v-for="book in newBooks" :key="book.id">
+        <swiper :options="swiperOptions">
+          <swiper-slide class="book-item" v-for="book in newBooks" :key="book.id">
             <img :src="book.image" :alt="book.name" class="book-image" />
             <router-link :to="`/book/${book.id}`" class="book-link">
               <h3 class="book-name">{{ book.name }}</h3>
             </router-link>
             <p class="book-author">{{ book.author }}</p>
-          </div>
-        </div>
+            <p class="book-create-time">{{ book.create_time }}上架</p>
+          </swiper-slide>
+          <div class="swiper-pagination" slot="pagination"></div>
+          <div class="swiper-button-next" slot="button-next"></div>
+          <div class="swiper-button-prev" slot="button-prev"></div>
+        </swiper>
       </div>
+
       <div class="book-section" v-if="_isReader">
         <h2>You may also like</h2>
-        <div class="books-grid">
-          <div class="book-item" v-for="book in recommendBook" :key="book.id">
+        <swiper :options="swiperOptions">
+          <swiper-slide class="book-item" v-for="book in recommendBook" :key="book.id">
             <img :src="book.image" :alt="book.name" class="book-image" />
             <router-link :to="`/book/${book.id}`" class="book-link">
               <h3 class="book-name">{{ book.name }}</h3>
             </router-link>
             <p class="book-author">{{ book.author }}</p>
-          </div>
-        </div>
+          </swiper-slide>
+          <div class="swiper-pagination" slot="pagination"></div>
+          <div class="swiper-button-next" slot="button-next"></div>
+          <div class="swiper-button-prev" slot="button-prev"></div>
+        </swiper>
       </div>
     </section>
     <footer class="footer">
@@ -61,13 +74,37 @@
 </template>
 
 <script>
+import { Swiper, SwiperSlide, Pagination, Navigation, directive } from 'vue-awesome-swiper'
+import 'swiper/css/swiper.css'
+
+Swiper.use([Pagination, Navigation]);
+
 export default {
   name: 'HomeView',
+  components: {
+    Swiper,
+    SwiperSlide
+  },
+  directives: {
+    swiper: directive
+  },
   data() {
     return {
       trendingBooks: [],
       newBooks: [],
       recommendBook: [],
+      swiperOptions: {
+        slidesPerView: "auto",
+        spaceBetween: 20,
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev',
+        },
+      },
     };
   },
   async created() {
@@ -79,7 +116,7 @@ export default {
   },
   computed: {
     _isReader() {
-      return this.$store.state.userType == 0;
+      return this.$store.state.userType === 0;
     },
   },
 }
@@ -110,6 +147,10 @@ export default {
   margin-bottom: 20px;
 }
 
+.book-section {
+  padding: 10px;
+}
+
 .books-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -124,6 +165,8 @@ export default {
   text-align: center;
   padding: 10px;
   transition: transform 0.2s, box-shadow 0.2s;
+  width: 200px; /* Allow Swiper to control the width */
+  margin-right: 20px; /* Custom margin for each item */
 }
 
 .book-item:hover {
@@ -156,13 +199,12 @@ export default {
   color: #555;
 }
 
-
 .star {
-  color: #ccc; /* 灰色代表未填充星星 */
+  color: #ccc; /* Gray for unfilled stars */
 }
 
 .star.filled {
-  color: #f5c518; /* 黄色代表填充星星 */
+  color: #f5c518; /* Yellow for filled stars */
 }
 
 .book-likes {
@@ -175,4 +217,9 @@ export default {
   font-weight: bold;
 }
 
+.book-create-time {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #555;
+}
 </style>

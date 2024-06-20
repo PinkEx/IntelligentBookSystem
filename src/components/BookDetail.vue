@@ -24,25 +24,53 @@
           <i class="el-icon-date"></i>
           出版日期：</strong>{{ book.pub_date }}
         </p>
+        <p class="book-pub-date"><strong>
+          <i class="el-icon-upload2"></i>
+          上架日期：</strong>{{ book.create_time ? book.create_time : "待上架" }}
+        </p>
         <p class="book-introduction"><strong>简介：</strong>{{ book.introduction }}</p>
       </el-card>
     </div>
 
-
     <div v-if="_isReader" class="book-actions">
-      <el-button type="primary" @click="handleFavorite">
+      <el-button type="primary" @click="handleFavorite" size="large">
         收藏 <el-badge :value="book.stars" class="item"></el-badge>
       </el-button>
-      <el-button type="success" @click="handleBorrow">借阅</el-button>
+      <el-button v-if="book.number > 0" type="success" @click="handleBorrow" size="large">
+        借阅 <el-badge :value="book.lend_frequency" class="item"></el-badge>
+      </el-button>
+      <el-button v-if="book.number == 0" type="info" size="large" disabled>
+        暂缺
+      </el-button>
     </div>
 
     <div class="book-reviews">
-      <h2>读者评价</h2>
+      <div class="reviews-header">
+        <h2>读者评价</h2>
+        <div>
+          总体评分：<span v-for="level in 5" :key="level" class="star" :class="{'filled': level <= book.rating}">★</span>
+        </div>
+      </div>
       <div class="review-item" v-for="review in book.reviews" :key="review.id">
         <p class="review-content">{{ review.content }}</p>
-        <p class="review-author">| by {{ review.author }}</p>
+        <p class="review-author">
+          | by {{ review.author }}
+          <span v-for="level in 5" :key="level" class="star" :class="{'filled': level <= review.rating}">★</span>
+        </p>
       </div>
     </div>
+
+    <el-dialog :visible.sync="isDialogVisible" title="确认借阅">
+      <div v-if="selectedUser != {}">
+        <p><strong>用户名:</strong> {{ selectedUser.username }}</p>
+        <p><strong>借阅时间: </strong> {{ currentDate() }}</p>
+        <p><strong>（最迟）归还时间: </strong> {{ futureDate() }} </p>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="isDialogVisible = false" type="success" class="center-button">确认</el-button>
+        <el-button @click="isDialogVisible = false" type="danger" class="center-button">取消</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -50,7 +78,9 @@
 export default {
   data() {
     return {
-      book: {}
+      book: {},
+      isDialogVisible: false,
+      selectedUser: {},
     };
   },
   computed: {
@@ -60,11 +90,39 @@ export default {
   },
   async created() {
     const bookId = this.$route.params.id;
-    console.log(bookId);
     await this.$store.dispatch("fetchBookById", bookId);
     this.book = this.$store.state.bookDetails;
-    console.log(this.book);
+    if (this._isReader) {
+      await this.$store.dispatch("fetchUserByUsername", this.$store.state.username);
+      this.selectedUser = this.$store.state.userDetails;
+    }
   },
+  methods: {
+    handleFavorite() {
+
+    },
+    handleBorrow() {
+      this.isDialogVisible = true;
+    },
+    currentDate() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const date = String(now.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${date}`;
+      return formattedDate;
+    },
+    futureDate() {
+      const now = new Date();
+      const futureDate = new Date(now);
+      futureDate.setDate(now.getDate() + 15);
+      const year = futureDate.getFullYear();
+      const month = String(futureDate.getMonth() + 1).padStart(2, '0');
+      const date = String(futureDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${date}`;
+      return formattedDate;
+    }
+  }
 };
 </script>
 
@@ -109,6 +167,11 @@ export default {
   text-align: left;
 }
 
+.el-button {
+  height: 48px;
+  line-height: 24px;
+}
+
 .book-reviews {
   background-color: #f9f9f9; /* 浅灰色背景 */
   border-radius: 8px; /* 圆角边框 */
@@ -123,14 +186,18 @@ export default {
   color: #333; /* 标题字体颜色 */
 }
 
-.review-item {
-  border-top: 2px solid #ddd;
-  padding: 5px 0; /* 评价项的内边距 */
-  margin-bottom: 5px; /* 评价项的下边距 */
+.star {
+  color: #ccc; /* Gray for unfilled stars */
 }
 
-.review-item:last-child {
-  border-bottom: none; /* 最后一个评价项没有底部边框 */
+.star.filled {
+  color: #f5c518; /* Yellow for filled stars */
+}
+
+.review-item {
+  border-top: 2px solid #ddd;
+  padding: 5px 0;
+  margin-bottom: 5px;
 }
 
 .review-content {
@@ -138,6 +205,9 @@ export default {
   color: #555; /* 评价内容字体颜色 */
   margin-bottom: 5px; /* 评价内容下边距 */
   line-height: 1.5; /* 行高 */
+  text-align: left;
+  white-space: pre-wrap; /* 允许文字换行，并保留空格和换行符 */
+  word-wrap: break-word; /* 文字自动换行 */
 }
 
 .review-author {
@@ -147,32 +217,21 @@ export default {
   text-align: right; /* 右对齐 */
 }
 
-
-/* .book-reviews {
-  margin-top: 40px;
+.reviews-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px; /* 添加间距 */
 }
 
-.book-reviews h3 {
-  margin-bottom: 20px;
+.book-rating {
+  font-size: 12px;
+  color: #888;
 }
 
-.review-item {
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 10px;
+.rating-scale {
+  font-size: 10px;
+  margin-left: 5px;
 }
-
-.review-content {
-  margin: 0;
-}
-
-.review-author {
-  font-size: 0.9em;
-  color: #555;
-  text-align: right;
-  margin-top: 10px;
-} */
 
 </style>
