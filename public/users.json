@@ -5,7 +5,7 @@
         "hashkey": "$2a$10$ILm4OQBzFRHRFWmOTTZaQ.eHj9dGxzGtGRBxudUcCOL91gwEW87rG",
         "gender": "Male",
         "email": "admin@int.book.sys.com",
-        "phone": "1234567890",
+        "phone": "13234567890",
         "status": "enabled",
         "address": "山东省威海市环翠区哈尔滨工业大学（威海）"
     },
@@ -15,7 +15,7 @@
         "hashkey": "$2a$10$ILm4OQBzFRHRFWmOTTZaQ.eHj9dGxzGtGRBxudUcCOL91gwEW87rG",
         "gender": "Female",
         "email": "analyst@int.book.sys.com",
-        "phone": "1234567891",
+        "phone": "13234567891",
         "status": "enabled",
         "address": "山东省威海市环翠区哈尔滨工业大学（威海）"
     },
@@ -25,7 +25,7 @@
         "hashkey": "$2a$10$mFWgcxyYGddHxLgpULIIpe7mmJnY9SaWY6dlUSuAb3RAiVXr3L0IW",
         "gender": "",
         "email": "foo@email.com",
-        "phone": "1234567892",
+        "phone": "13234567892",
         "status": "enabled",
         "address": "山东省威海市环翠区哈尔滨工业大学（威海）"
     },
@@ -35,7 +35,7 @@
         "hashkey": "$2a$10$mFWgcxyYGddHxLgpULIIpe7mmJnY9SaWY6dlUSuAb3RAiVXr3L0IW",
         "gender": "",
         "email": "bar@email.com",
-        "phone": "1234567893",
+        "phone": "13234567893",
         "status": "disabled",
         "address": "山东省威海市环翠区哈尔滨工业大学（威海）"
     }

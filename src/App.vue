@@ -13,17 +13,29 @@
       </el-submenu>
       <el-submenu v-if="_isLoggedIn" index="1">
         <template slot="title">{{ this.$store.state.username }}</template>
-        <el-menu-item index="/profile">个人资料</el-menu-item>
+        <el-menu-item v-if="_isReader" index="/profile">个人资料</el-menu-item>
         <el-menu-item @click="_logout">退出</el-menu-item>
       </el-submenu>
+      <el-menu-item v-if="true" @click="toggleNotification">🔔</el-menu-item>
     </el-menu>
     <router-view/>
+    <NotificationBoard :isVisible="isNotificationVisible" @close="closeNotification" />
   </div>
 </template>
 
 <script>
+import NotificationBoard from '@/components/NotificationBoard.vue';
+
 export default {
   name: 'App',
+  components: {
+    NotificationBoard
+  },
+  data() {
+    return {
+      isNotificationVisible: false,
+    }
+  },
   computed: {
     _isLoggedIn() {
       return this.$store.state.isLoggedIn;
@@ -43,6 +55,12 @@ export default {
       this.$router.push("/");
       this.$store.dispatch('logout');
     },
+    toggleNotification() {
+      this.isNotificationVisible = !this.isNotificationVisible;
+    },
+    closeNotification() {
+      this.isNotificationVisible = false;
+    }
   },
 }
 </script>
@@ -55,6 +73,7 @@ export default {
   text-align: center;
   color: #2c3e50;
 }
+
 .menu-wrapper {
   display: flex;
   justify-content: space-between;

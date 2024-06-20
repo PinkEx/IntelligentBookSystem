@@ -12,7 +12,10 @@
       </div>
 
       <div class="book-section">
-        <h2>Top Trending Books</h2>
+        <div class="background-overlay"></div>
+        <h2 class="sub-header">
+          Top Trending Books
+        </h2>
         <swiper :options="swiperOptions">
           <swiper-slide class="book-item" v-for="book in trendingBooks" :key="book.id">
             <img :src="book.image" :alt="book.name" class="book-image" />
@@ -35,7 +38,10 @@
       </div>
 
       <div class="book-section">
-        <h2>New Arrivals</h2>
+        <div class="background-overlay"></div>
+        <h2 class="sub-header">
+          New Arrivals
+        </h2>
         <swiper :options="swiperOptions">
           <swiper-slide class="book-item" v-for="book in newBooks" :key="book.id">
             <img :src="book.image" :alt="book.name" class="book-image" />
@@ -52,7 +58,10 @@
       </div>
 
       <div class="book-section" v-if="_isReader">
-        <h2>You may also like</h2>
+        <div class="background-overlay"></div>
+        <h2 class="sub-header">
+          You may also like
+        </h2>
         <swiper :options="swiperOptions">
           <swiper-slide class="book-item" v-for="book in recommendBook" :key="book.id">
             <img :src="book.image" :alt="book.name" class="book-image" />
@@ -134,6 +143,17 @@ export default {
   padding: 20px;
   width: 100%;
   text-align: center;
+  font-style: normal;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+}
+
+.sub-header {
+  padding: 10px;
+  width: 100%;
+  text-align: center;
+  font-style: italic;
+  font-size: 24px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
 }
 
 .content {
@@ -144,11 +164,40 @@ export default {
 
 .welcome-message {
   text-align: center;
+  padding: 20px;
   margin-bottom: 20px;
+  background-image: url("@/assets/scenary.png");
+  background-size: auto;
+  background-repeat: no-repeat;
+  background-position: center;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-weight: bolder;
+  width: 100%;
+  color: rgb(95, 127, 63);
 }
 
 .book-section {
-  padding: 10px;
+  position: relative;
+  width: 100%;
+}
+
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('@/assets/envelope.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.4; /* 设置透明度 */
+  z-index: -1; /* 确保背景覆盖层在其他内容下面 */
+}
+
+.book-section > *:not(.background-overlay) {
+  position: relative;
+  z-index: 1;
 }
 
 .books-grid {
@@ -158,15 +207,17 @@ export default {
 }
 
 .book-item {
-  background-color: #fff;
-  border: 1px solid #ddd;
+  background-color: rgba(255, 255, 255, 0.3);
+  /* border: 1px solid #ddd; */
   border-radius: 8px;
   overflow: hidden;
   text-align: center;
   padding: 10px;
   transition: transform 0.2s, box-shadow 0.2s;
   width: 200px; /* Allow Swiper to control the width */
-  margin-right: 20px; /* Custom margin for each item */
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
 }
 
 .book-item:hover {

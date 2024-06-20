@@ -33,11 +33,17 @@
     </div>
 
     <div v-if="_isReader" class="book-actions">
-      <el-button type="primary" @click="handleFavorite" size="large">
+      <el-button v-if="!starred" type="primary" @click="handleFavorite" size="large">
         收藏 <el-badge :value="book.stars" class="item"></el-badge>
       </el-button>
-      <el-button v-if="book.number > 0" type="success" @click="handleBorrow" size="large">
+      <el-button v-if="starred" type="primary" @click="handleFavorite" size="large">
+        取消收藏 <el-badge class="item"></el-badge>
+      </el-button>
+      <el-button v-if="!borrowed && book.number > 0" type="success" @click="isDialogVisible = true" size="large">
         借阅 <el-badge :value="book.lend_frequency" class="item"></el-badge>
+      </el-button>
+      <el-button v-if="borrowed" type="success" @click="isDialogVisible = true" size="large">
+        归还 <el-badge class="item"></el-badge>
       </el-button>
       <el-button v-if="book.number == 0" type="info" size="large" disabled>
         暂缺
@@ -60,14 +66,35 @@
       </div>
     </div>
 
-    <el-dialog :visible.sync="isDialogVisible" title="确认借阅">
+    <el-dialog v-if="!borrowed" :visible.sync="isDialogVisible" title="确认借阅">
       <div v-if="selectedUser != {}">
-        <p><strong>用户名:</strong> {{ selectedUser.username }}</p>
-        <p><strong>借阅时间: </strong> {{ currentDate() }}</p>
-        <p><strong>（最迟）归还时间: </strong> {{ futureDate() }} </p>
+        <p><strong>用户名：</strong> {{ selectedUser.username }}</p>
+        <p><strong>借阅时间：</strong> {{ currentDate() }}</p>
+        <p><strong>（最迟）归还时间：</strong> {{ futureDate() }} </p>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="isDialogVisible = false" type="success" class="center-button">确认</el-button>
+        <el-button @click="handleBorrow" type="success" class="center-button">确认</el-button>
+        <el-button @click="isDialogVisible = false" type="danger" class="center-button">取消</el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog v-if="borrowed" :visible.sync="isDialogVisible" title="确认归还">
+      <div v-if="selectedUser != {}">
+        <p class="left-align"><strong>用户名：</strong>{{ selectedUser.username }}</p>
+        <div class="rating-container">
+          <p class="left-align rating-text"><strong>评分：</strong></p>
+          <el-rate v-model="rating" :colors="['#99A9BF', '#F7BA2A', '#FF9900']"></el-rate>
+        </div>
+        <p class="left-align"><strong>填写书评：</strong></p>
+        <el-input
+          type="textarea"
+          v-model="review"
+          placeholder="请输入书评"
+          :rows="5"
+        ></el-input>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="handleReturn" type="success" class="center-button">确认</el-button>
         <el-button @click="isDialogVisible = false" type="danger" class="center-button">取消</el-button>
       </span>
     </el-dialog>
@@ -81,6 +108,10 @@ export default {
       book: {},
       isDialogVisible: false,
       selectedUser: {},
+      starred: false,
+      borrowed: false,
+      rating: 0,
+      review: ""
     };
   },
   computed: {
@@ -96,13 +127,18 @@ export default {
       await this.$store.dispatch("fetchUserByUsername", this.$store.state.username);
       this.selectedUser = this.$store.state.userDetails;
     }
+    this.borrowed = true;
   },
   methods: {
-    handleFavorite() {
-
+    async handleFavorite() {
+      await this.$store.dispatch("setFavorite");
+      this.starred = !this.starred;
     },
-    handleBorrow() {
-      this.isDialogVisible = true;
+    async handleBorrow() {
+      await this.$store.dispatch("borrowBook");
+    },
+    async handleReturn() {
+      await this.$store.dispatch("returnBook");
     },
     currentDate() {
       const now = new Date();
@@ -234,4 +270,16 @@ export default {
   margin-left: 5px;
 }
 
+.left-align {
+  text-align: left;
+}
+
+.rating-container {
+  display: flex;
+  align-items: center;
+}
+
+.rating-text {
+  margin-right: 10px;
+}
 </style>
