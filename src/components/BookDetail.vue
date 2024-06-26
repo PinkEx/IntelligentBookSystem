@@ -32,7 +32,7 @@
       </el-card>
     </div>
 
-    <div v-if="_isReader" class="book-actions">
+    <div v-if="_isUser" class="book-actions">
       <el-button v-if="!starred" type="primary" @click="handleFavorite" size="large">
         收藏 <el-badge :value="book.stars" class="item"></el-badge>
       </el-button>
@@ -115,23 +115,24 @@ export default {
     };
   },
   computed: {
-    _isReader() {
-      return this.$store.state.userType == 0;
+    _isUser() {
+      return this.$store.state.role == "user";
     }
   },
   async created() {
     const bookId = this.$route.params.id;
-    await this.$store.dispatch("fetchBookById", bookId);
-    this.book = this.$store.state.bookDetails;
-    if (this._isReader) {
-      await this.$store.dispatch("fetchUserByUsername", this.$store.state.username);
+    if (this._isUser) {
+      await this.$store.dispatch("fetchBookByIdByUser", bookId);
+      this.book = this.$store.state.bookDetails;
+      await this.$store.dispatch("fetchUserDetails");
       this.selectedUser = this.$store.state.userDetails;
     }
-    this.borrowed = true;
+    // check borrow state
+    this.borrowed = false;
   },
   methods: {
     async handleFavorite() {
-      await this.$store.dispatch("setFavorite");
+      await this.$store.dispatch("setFavorite", !this.starred);
       this.starred = !this.starred;
     },
     async handleBorrow() {

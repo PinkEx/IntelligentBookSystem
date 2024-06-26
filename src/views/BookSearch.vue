@@ -17,6 +17,12 @@
           ></el-option>
         </el-select>
       </el-form-item>
+      
+      <el-form-item v-if="_isUser">
+        <el-checkbox v-model="searchForm.starred">已收藏</el-checkbox>
+        <el-checkbox v-model="searchForm.borrowed">借阅中</el-checkbox>
+      </el-form-item>
+
       <el-form-item>
         <el-button type="primary" @click="handleSearch">搜索</el-button>
         <el-button @click="handleReset">重置</el-button>
@@ -38,12 +44,12 @@
           <el-table-column prop="stars" label="收藏次数" align="center" width="80" sortable></el-table-column>
           <el-table-column prop="lend_frequency" label="借阅次数" align="center" width="80" sortable></el-table-column>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" align="center" :width="_isReader ? 240 : 80">
+        <el-table-column fixed="right" label="操作" align="center" :width="_isUser ? 240 : 80">
           <template slot-scope="scope">
             <el-button @click="handleClick(scope.row)" size="small">查看</el-button>
-            <el-button v-if="_isReader" @click="handleClick(scope.row)" type="primary" size="small">收藏</el-button>
-            <el-button v-if="_isReader && scope.row.number > 0" @click="handleClick(scope.row)" type="success" size="small">借阅</el-button>
-            <el-button v-if="_isReader && scope.row.number == 0" @click="handleClick(scope.row)" type="info" size="small" disabled>暂缺</el-button>
+            <el-button v-if="_isUser" @click="handleClick(scope.row)" type="primary" size="small">收藏</el-button>
+            <el-button v-if="_isUser && scope.row.number > 0" @click="handleClick(scope.row)" type="success" size="small">借阅</el-button>
+            <el-button v-if="_isUser && scope.row.number == 0" @click="handleClick(scope.row)" type="info" size="small" disabled>暂缺</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -53,13 +59,15 @@
 
 <script>
 export default {
-  name: 'BookSearch',
+  name: "BookSearch",
   data() {
     return {
       searchForm: {
-        name: '',
-        author: '',
-        category: ''
+        title: "",
+        author: "",
+        category: "",
+        starred: "",
+        borrowed: ""
       },
       categories: [
         { value: 'fiction', label: '小说' },
@@ -75,21 +83,22 @@ export default {
     await this.$store.dispatch("fetchBooks");
   },
   computed: {
-    _isReader() {
-      return this.$store.state.userType == 0;
+    _isUser() {
+      return this.$store.state.role == "user";
     }
   },
   methods: {
     async handleSearch() {
-      // await this.$store.dispatch("searchBooks", this.searchForm);
-      this.filteredBooks = this.$store.state.books;
+      await this.$store.dispatch("searchBooks", this.searchForm);
     },
     async handleReset() {
-      this.$refs['searchForm'].resetFields();
+      this.$refs["searchForm"].resetFields();
       this.searchForm = {
-        title: '',
-        author: '',
-        category: ''
+        title: "",
+        author: "",
+        category: "",
+        starred: "",
+        borrowed: ""
       };
       await this.handleSearch(this.searchForm);
     },
@@ -110,7 +119,7 @@ export default {
 }
 
 .demo-form-inline .el-form-item {
-  margin-right: 10px;
+  margin-right: 20px;
   margin-bottom: 10px;
 }
 

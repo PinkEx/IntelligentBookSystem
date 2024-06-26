@@ -29,12 +29,8 @@ export default {
         confirmPassword: '',
       },
       rules: {
-        username: [
-          { required: true, message: '请输入用户名', trigger: 'blur' }
-        ],
-        password: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
-        ],
+        username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
         confirmPassword: [
           { required: true, message: '请确认密码', trigger: 'blur' },
           { validator: (rule, value, callback) => {
@@ -57,12 +53,9 @@ export default {
       if (password != confirmPassword) return;
       try {
         await this.$store.dispatch("register", { username, password });
-        console.log(this.$store);
-        if (this.$store.state.isLoggedIn) this.$router.push("/");
-        else alert("用户名或密码错误!");
+        this.$router.push("/login");
       } catch (error) {
         console.error("register failed:", error);
-        alert("请求超时!");
       }
     },
     resetForm(formName) {

@@ -5,7 +5,7 @@
       <el-menu-item v-if="_isAdmin" index="/borrowManage">借阅管理</el-menu-item>
       <el-menu-item v-if="_isAdmin" index="/userManage">用户管理</el-menu-item>
       <el-menu-item v-if="_isAnalyst" index="/dataDashboard">数据概览</el-menu-item>
-      <el-menu-item v-if="_isReader" index="/bookSearch">书籍搜索</el-menu-item>
+      <el-menu-item v-if="_isUser" index="/bookSearch">书籍搜索</el-menu-item>
       <el-submenu v-if="!_isLoggedIn" index="0">
         <template slot="title">注册 & 登录</template>
         <el-menu-item index="/register">注册</el-menu-item>
@@ -13,7 +13,7 @@
       </el-submenu>
       <el-submenu v-if="_isLoggedIn" index="1">
         <template slot="title">{{ this.$store.state.username }}</template>
-        <el-menu-item v-if="_isReader" index="/profile">个人资料</el-menu-item>
+        <el-menu-item v-if="_isUser" index="/profile">个人资料</el-menu-item>
         <el-menu-item @click="_logout">退出</el-menu-item>
       </el-submenu>
       <el-menu-item v-if="true" @click="toggleNotification">🔔</el-menu-item>
@@ -38,16 +38,13 @@ export default {
   },
   computed: {
     _isLoggedIn() {
-      return this.$store.state.isLoggedIn;
+      return this.$store.state.role != null;
     },
-    _isReader() {
-      return this.$store.state.userType == 0;
+    _isUser() {
+      return this.$store.state.role == "user";
     },
     _isAdmin() {
-      return this.$store.state.userType == 1;
-    },
-    _isAnalyst() {
-      return this.$store.state.userType == 2;
+      return this.$store.state.role == "admin";
     }
   },
   methods: {

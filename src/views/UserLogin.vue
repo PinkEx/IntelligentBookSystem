@@ -38,7 +38,7 @@ export default {
       const password = this.loginForm.password;
       try {
         await this.$store.dispatch("login", { username, password });
-        if (this.$store.state.isLoggedIn) this.$router.push("/");
+        if (this.$store.state.role != null) this.$router.push("/");
       } catch (err) {
         alert(err);
       }

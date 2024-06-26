@@ -1,6 +1,7 @@
 <template>
   <div class="user-management">
     <el-table :data="users" v-loading="isLoading" style="width: 100%">
+      <el-table-column prop="id" label="ID" sortable></el-table-column>
       <el-table-column prop="username" label="用户名" sortable></el-table-column>
       <el-table-column prop="email" label="邮箱" sortable></el-table-column>
       <el-table-column prop="role" label="角色" sortable></el-table-column>
@@ -13,8 +14,8 @@
       </el-table-column>
       <el-table-column label="Actions">
         <template slot-scope="scope">
-          <el-button @click="viewUserDetails(scope.row.username)" type="primary" size="mini">用户详情</el-button>
-          <el-button @click="blacklistUser(scope.row.username)" type="danger" size="mini" :disabled="scope.row.status == 'disabled'">拉黑用户</el-button>
+          <el-button @click="viewUserDetails(scope.row.id)" type="primary" size="mini">用户详情</el-button>
+          <el-button @click="blacklistUser(scope.row.id)" type="danger" size="mini" :disabled="scope.row.status == 'disabled'">拉黑用户</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -45,27 +46,23 @@ export default {
   },
   computed: {
     users() {
-      // console.log("!", this.$store.state.users);
       return this.$store.state.users;
     }
   },
   async created() {
     await this.$store.dispatch("fetchUsers");
-    this.isLoading = this.$store.state.isLoading;
-    console.log("?", this.$store.state.users, this.$store.state.isLoading);
   },
   methods: {
-    async viewUserDetails(username) {
-      await this.$store.dispatch("fetchUserByUsername", username);
+    async viewUserDetails(id) {
+      await this.$store.dispatch("fetchUserById", id);
       this.selectedUser = this.$store.state.userDetails;
-      console.log(username, this.$store.state);
       this.isDialogVisible = true;
     },
-    async blacklistUser(username) {
-      await this.$store.dispatch("fetchUserByUsername", username);
+    async blacklistUser(id) {
+      await this.$store.dispatch("fetchUserById", id);
       this.selectedUser = this.$store.state.userDetails;
       if (confirm('Are you sure you want to blacklist this user?')) {
-        console.log(username, this.selectedUser);
+        console.log(id, this.selectedUser);
         // this.$store.dispatch("blacklistUser", userId);
       }
     }

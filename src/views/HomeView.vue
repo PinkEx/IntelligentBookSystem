@@ -117,15 +117,14 @@ export default {
     };
   },
   async created() {
-    await this.$store.dispatch("fetchBooks");
-    this.trendingBooks = this.$store.getters.trendingBooks;
-    this.newBooks = this.$store.getters.newBooks;
-    this.recommendBook = this.$store.getters.recommendBooks;
+    this.trendingBooks = await this.$store.dispatch("fetchTrendingBooks");
+    this.newBooks = await this.$store.dispatch("fetchNewBooks");
+    this.recommendBook = [];
     console.log(this.trendingBooks, this.newBooks, this.recommendBooks);
   },
   computed: {
     _isReader() {
-      return this.$store.state.userType === 0;
+      return this.$store.state.userType === "user";
     },
   },
 }
