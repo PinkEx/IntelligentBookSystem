@@ -124,8 +124,9 @@ export default {
     if (this._isUser) {
       await this.$store.dispatch("fetchBookByIdByUser", bookId);
       this.book = this.$store.state.bookDetails;
-      await this.$store.dispatch("fetchUserDetails");
+      await this.$store.dispatch("fetchUserDetails", this.$store.state.userId);
       this.selectedUser = this.$store.state.userDetails;
+      console.log(JSON.stringify(this.book), JSON.stringify(this.selectedUser));
     }
     // check borrow state
     this.borrowed = false;

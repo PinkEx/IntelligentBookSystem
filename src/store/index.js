@@ -1,6 +1,7 @@
 import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
+import { jwtDecode } from 'jwt-decode';
 
 Vue.use(Vuex)
 
@@ -9,6 +10,7 @@ const store = new Vuex.Store({
     // current user states
     isLoading: false,
     token: null,
+    userId: null,
     role: null,
     // general
     books: [],
@@ -36,6 +38,8 @@ const store = new Vuex.Store({
     },
     SET_LOGGED_OUT(state) {
       state.role = null;
+      state.token = null;
+      state.userId = null;
     },
     SET_BOOKS(state, books) {
       state.books = books;
@@ -63,9 +67,11 @@ const store = new Vuex.Store({
     },
     SET_TOKEN(state, token) {
       state.token = token;
+      state.userId = jwtDecode(token).id;
     },
   },
   actions: {
+
     // 管理员获取用户列表
     async fetchUsers({ commit }) {
       commit("SET_LOADING", true);
@@ -75,23 +81,6 @@ const store = new Vuex.Store({
         if (response.status == 200 && response.data.code == 1) {
           success = true;
           commit('SET_USERS', response.data.data.rows);
-        }
-      } catch (err) {
-        console.error("Failed to fetch users:", err);
-      } finally {
-        commit("SET_LOADING", false);
-      }
-      return success;
-    },
-    // 管理员获取用户信息
-    async fetchUserById({ commit }, id) {
-      commit("SET_LOADING", true);
-      let success = false;
-      try {
-        const response = await axios.get(`/api/admins/users/${id}`);
-        if (response.status == 200 && response.data.code == 1) {
-          success = true;
-          commit('SET_USER_DETAILS', response.data.data);
         }
       } catch (err) {
         console.error("Failed to fetch users:", err);
@@ -150,9 +139,13 @@ const store = new Vuex.Store({
     // 获取用户个人详细信息
     async fetchUserDetails({ commit }, id) {
       commit("SET_LOADING", true);
-      let success = false;
+      let success = false, path = this.role == "admin" ? `/api/admins/users/${id}` : `/api/users/${id}`;
       try {
-        const response = await axios.get(`/api/users/${id}`);
+        const response = await axios.get(path, {
+          headers: {
+            token: this.state.token
+          }
+        });
         commit("SET_USER_DETAILS", response.data.data);
         if (response.status == 200 && response.data.code == 1) success = true;
       } catch (err) {
@@ -207,9 +200,13 @@ const store = new Vuex.Store({
       commit("SET_LOADING", true);
       let success = false;
       try {
-        const response = await axios.get(`/api/users/book/${id}`);
+        const response = await axios.get(`/api/users/book/${id}`, {
+          headers: {
+            token: this.state.token
+          }
+        });
         if (response.status == 200 && response.data.code == 1) success = true;
-        commit("SET_BOOK_DETAILS", response.data);
+        commit("SET_BOOK_DETAILS", response.data.data);
       } catch (err) {
         console.error("Failed to fetch book by id", err);
       } finally {
@@ -309,7 +306,11 @@ const store = new Vuex.Store({
       commit("SET_LOADING", true);
       let success = false, path = this.state.role == "admin" ? "/api/admins/booksByUp" : "/api/users/booksByUp";
       try {
-        const response = await axios.get(path);
+        const response = await axios.get(path, {
+          headers: {
+            token: this.state.token
+          }
+        });
         if (response.status == 200 && response.data.code == 1) {
           success = true;
           commit("SET_TRENDING_BOOKS", response.data.data.listResult);
@@ -326,7 +327,11 @@ const store = new Vuex.Store({
       commit("SET_LOADING", true);
       let success = false, path = this.state.role == "admin" ? "/api/admins/booksByTime" : "/api/users/booksByTime";
       try {
-        const response = await axios.get(path);
+        const response = await axios.get(path, {
+          headers: {
+            token: this.state.token
+          }
+        });
         if (response.status == 200 && response.data.code == 1) {
           success = true;
           commit("SET_NEW_BOOKS", response.data.data.listResult);

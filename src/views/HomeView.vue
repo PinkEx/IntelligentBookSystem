@@ -101,7 +101,7 @@ export default {
     return {
       trendingBooks: [],
       newBooks: [],
-      recommendBook: [],
+      recommendBooks: [],
       swiperOptions: {
         slidesPerView: "auto",
         spaceBetween: 20,
@@ -117,10 +117,16 @@ export default {
     };
   },
   async created() {
-    this.trendingBooks = await this.$store.dispatch("fetchTrendingBooks");
-    this.newBooks = await this.$store.dispatch("fetchNewBooks");
-    this.recommendBook = [];
-    console.log(this.trendingBooks, this.newBooks, this.recommendBooks);
+    await this.$store.dispatch("fetchTrendingBooks");
+    this.trendingBooks = this.$store.state.trendingBooks;
+
+    await this.$store.dispatch("fetchNewBooks");
+    this.newBooks = this.$store.state.newBooks;
+
+    if (this._isReader) {
+      this.recommendBook = [];
+    }
+    console.log(JSON.stringify(this.trendingBooks), JSON.stringify(this.newBooks), JSON.stringify(this.recommendBooks));
   },
   computed: {
     _isReader() {
