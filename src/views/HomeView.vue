@@ -24,7 +24,7 @@
             </router-link>
             <p class="book-author">{{ book.author }}</p>
             <div class="book-rating">
-              <span v-for="level in 5" :key="level" class="star" :class="{'filled': level <= book.rating}">★</span>
+              <span v-for="level in 5" :key="level" class="star" :class="{'filled': level <= book.grade}">★</span>
             </div>
             <div class="book-likes">
               <span class="likes-count">{{ book.stars }}</span>
@@ -49,7 +49,7 @@
               <h3 class="book-name">{{ book.name }}</h3>
             </router-link>
             <p class="book-author">{{ book.author }}</p>
-            <p class="book-create-time">{{ book.create_time }}上架</p>
+            <p class="book-create-time">{{ book.createTime }}上架</p>
           </swiper-slide>
           <div class="swiper-pagination" slot="pagination"></div>
           <div class="swiper-button-next" slot="button-next"></div>

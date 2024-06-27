@@ -1,53 +1,48 @@
 <template>
   <div class="profile-container">
     <el-form ref="profileForm" :model="profileForm" :rules="rules" label-width="100px" class="profile-form">
-      <!-- <el-form-item label="头像">
-        <el-upload
-          class="avatar-uploader"
-          :http-request="onImport"
-          :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-        >
-          <img v-if="profileForm.avatar" :src="profileForm.avatar" class="avatar">
+      <el-form-item label="头像">
+        <el-upload class="avatar-uploader" action="/api/upload" :headers="{ token: $store.state.token }"
+          :show-file-list="false" :on-success="handleAvatarSuccess" :disabled="!isModifying">
+          <img v-if="profileForm.image" :src="profileForm.image" class="avatar">
           <i v-else class="el-icon-plus avatar-uploader-icon"></i>
         </el-upload>
-      </el-form-item> -->
+      </el-form-item>
       <el-form-item label="性别">
-        <el-radio-group v-model="profileForm.gender">
-          <el-radio label="1">男</el-radio>
-          <el-radio label="2">女</el-radio>
-          <el-radio label="0">其他</el-radio>
+        <el-radio-group v-model="profileForm.gender" :disabled="!isModifying">
+          <el-radio :label="1">男</el-radio>
+          <el-radio :label="2">女</el-radio>
+          <el-radio :label="0">其他</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="生日">
-        <el-date-picker v-model="profileForm.birthday" type="date" placeholder="选择日期"></el-date-picker>
+        <el-date-picker v-model="profileForm.birthday" type="date" placeholder="选择日期"
+          :disabled="!isModifying"></el-date-picker>
       </el-form-item>
       <el-form-item label="邮箱" prop="email">
-        <el-input v-model="profileForm.email" type="email">
+        <el-input v-model="profileForm.email" type="email" :disabled="!isModifying">
           <template #prefix>
             <i class="el-icon-s-promotion"></i>
           </template>
         </el-input>
       </el-form-item>
       <el-form-item label="手机号码" prop="phone">
-        <el-input v-model="profileForm.phone" type="tel">
+        <el-input v-model="profileForm.phone" type="tel" :disabled="!isModifying">
           <template #prefix>
             <i class="el-icon-phone"></i>
           </template>
         </el-input>
       </el-form-item>
       <el-form-item label="邮寄地址">
-        <el-input v-model="profileForm.address">
+        <el-input v-model="profileForm.address" :disabled="!isModifying">
           <template #prefix>
             <i class="el-icon-s-home"></i>
           </template>
         </el-input>
       </el-form-item>
-      <el-form-item label="自我介绍">
-        <el-input type="textarea" v-model="profileForm.bio"></el-input>
-      </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="handleSave">保存</el-button>
+        <el-button v-if="!isModifying" type="primary" @click="isModifying = true">修改</el-button>
+        <el-button v-if="isModifying" type="success" @click="handleSave">保存</el-button>
         <el-button @click="handleReset">重置</el-button>
       </el-form-item>
     </el-form>
@@ -57,14 +52,22 @@
 export default {
   data() {
     return {
-      profileForm: {
-        avatar: "",
+      isModifying: false,
+      originalProfile: {
+        image: "",
         gender: "",
         birthday: "",
         email: "",
         phone: "",
         address: "",
-        bio: ""
+      },
+      profileForm: {
+        image: "",
+        gender: "",
+        birthday: "",
+        email: "",
+        phone: "",
+        address: "",
       },
       rules: {
         email: [
@@ -95,31 +98,30 @@ export default {
     };
   },
   async created() {
-    await this.$store.dispatch("fetchUserByUsername", this.$store.state.username);
-    this.profileForm = this.$store.state.userDetails;
+    await this.$store.dispatch("fetchUserDetails", this.$store.state.userId);
+    this.originalProfile = this.$store.state.userDetails;
+    this.profileForm = {
+      image: this.originalProfile.image,
+      gender: this.originalProfile.gender,
+      birthday: this.originalProfile.birthday,
+      email: this.originalProfile.email,
+      phone: this.originalProfile.phone,
+      address: this.originalProfile.address,
+    }
   },
   methods: {
-    onImport({ file }) {
-      let form = new FormData()
-      form.append("file", file);
-      console.log(file, form);
-      // this.$api.uploadFile(form).then((res) => {
-      //   let { code, data } = res;
-      //   if (code == 200) {
-      //     this.imageUrl = data;
-      //     console.log("上传成功");
-      //   } else {
-      //     console.log("上传失败");
-      //   }
-      // })
-    },
     handleAvatarSuccess(res, file) {
       console.log("####", res, file);
-      this.profileForm.avatar = URL.createObjectURL(file.raw);
-      console.log(file, file.raw);
+      this.profileForm.image = URL.createObjectURL(file.raw);
+      console.log(file, this.profileForm.image);
     },
-    handleSave() {
-      this.$message.success('保存成功');
+    async handleSave() {
+      let success = await this.$store.dispatch("updateUserDetails", this.profileForm);
+      if (success) {
+        this.$message.success('保存成功');
+        this.originalProfile = this.$store.state.userDetails;
+      }
+      this.isModifying = false;
     },
     handleReset() {
       this.$refs['profileForm'].resetFields();

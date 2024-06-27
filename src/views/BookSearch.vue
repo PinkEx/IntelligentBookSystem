@@ -11,9 +11,9 @@
         <el-input v-model="searchForm.language" placeholder="请输入语言"></el-input>
       </el-form-item>
       <el-form-item label="价格区间">
-        <el-input-number v-model="searchForm.lowerPrice" :min="0" :max="200"></el-input-number>
+        <el-input-number v-model="searchForm.lowerPrice" :min="0" :max="1000"></el-input-number>
         元~
-        <el-input-number v-model="searchForm.upperPrice" :min="0" :max="200"></el-input-number>
+        <el-input-number v-model="searchForm.upperPrice" :min="0" :max="1000"></el-input-number>
         元
       </el-form-item>
       <el-form-item label="出版区间">
@@ -77,21 +77,19 @@ export default {
   data() {
     return {
       searchForm: {
-        title: "",
+        name: "",
         author: "",
         language: "",
-        lowerPrice: "",
-        upperPrice: "",
+        lowerPrice: 0,
+        upperPrice: 999,
         category: "",
         starred: "",
         borrowed: ""
       },
       categories: [
-        { value: 'fiction', label: '小说' },
-        { value: 'non-fiction', label: '非小说' },
-        { value: 'science', label: '科学' },
-        { value: 'history', label: '历史' },
-        { value: 'biography', label: '传记' },
+        { value: '1', label: '默认' },
+        { value: '2', label: '测试' },
+        { value: '3', label: '更新类别' },
       ],
       filteredBooks: [],
     };
@@ -107,15 +105,43 @@ export default {
   methods: {
     async handleSearch() {
       await this.$store.dispatch("searchBooks", this.searchForm);
+      this.filteredBooks = [];
+      if (this.searchForm.category != "") {
+        for (let book of this.$store.state.filteredBooks) {
+          if (book.classId == this.searchForm.category) {
+            this.filteredBooks.push(book);
+          }
+        }
+      } else {
+        this.filteredBooks = this.$store.state.filteredBooks;
+      }
+      if (this.searchForm.starred) {
+        await this.$store.dispatch("fetchUserLikes");
+        this.filteredBooks = this.filteredBooks.filter(filteredBook => {
+          for (let likedBook of this.$store.state.userLikes) {
+            if (filteredBook.id == likedBook.bookId) return true;
+          }
+          return false;
+        });
+      }
+      if (this.searchForm.borrowed) {
+        await this.$store.dispatch("fetchUserBorrowHistory");
+        this.filteredBooks = this.filteredBooks.filter(filteredBook => {
+          for (let borrowedBook of this.$store.state.userBorrowHistory) {
+            if (filteredBook.id == borrowedBook.bookId && borrowedBook.isBack == 0) return true;
+          }
+          return false;
+        });
+      }
     },
     async handleReset() {
       this.$refs["searchForm"].resetFields();
       this.searchForm = {
-        title: "",
+        name: "",
         author: "",
         language: "",
-        lowerPrice: "",
-        upperPrice: "",
+        lowerPrice: 0,
+        upperPrice: 999,
         category: "",
         starred: "",
         borrowed: ""

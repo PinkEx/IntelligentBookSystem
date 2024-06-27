@@ -1,8 +1,17 @@
 <template>
   <div class="book-detail">
-    
+
     <div class="book-header">
-      <img :src="book.image" class="book-image" />
+      <div class="flip-container" :class="{ flipped: isFlipped }" @click="toggleFlip">
+        <div class="flipper">
+          <div class="front">
+            <el-image v-if="!isFlipped" :src="book.image" class="book-image" />
+          </div>
+          <div class="back">
+            <el-image v-if="isFlipped" :src="book.image" class="book-image" />
+          </div>
+        </div>
+      </div>
       <el-card class="book-info">
         <h1 class="book-name">
           {{ book.name }}
@@ -21,12 +30,12 @@
           <strong>价格：</strong>{{ book.price }}元
         </p>
         <p class="book-pub-date"><strong>
-          <i class="el-icon-date"></i>
-          出版日期：</strong>{{ book.pub_date }}
+            <i class="el-icon-date"></i>
+            出版日期：</strong>{{ book.pubDate }}
         </p>
         <p class="book-pub-date"><strong>
-          <i class="el-icon-upload2"></i>
-          上架日期：</strong>{{ book.create_time ? book.create_time : "待上架" }}
+            <i class="el-icon-upload2"></i>
+            上架日期：</strong>{{ book.createTime ? book.createTime : "待上架" }}
         </p>
         <p class="book-introduction"><strong>简介：</strong>{{ book.introduction }}</p>
       </el-card>
@@ -42,7 +51,7 @@
       <el-button v-if="!borrowed && book.number > 0" type="success" @click="isDialogVisible = true" size="large">
         借阅 <el-badge :value="book.lend_frequency" class="item"></el-badge>
       </el-button>
-      <el-button v-if="borrowed" type="success" @click="isDialogVisible = true" size="large">
+      <el-button v-if="borrowed" type="danger" @click="isDialogVisible = true" size="large">
         归还 <el-badge class="item"></el-badge>
       </el-button>
       <el-button v-if="book.number == 0" type="info" size="large" disabled>
@@ -54,14 +63,14 @@
       <div class="reviews-header">
         <h2>读者评价</h2>
         <div>
-          总体评分：<span v-for="level in 5" :key="level" class="star" :class="{'filled': level <= book.rating}">★</span>
+          总体评分：<span v-for="level in 5" :key="level" class="star" :class="{'filled': level <= book.grade}">★</span>
         </div>
       </div>
-      <div class="review-item" v-for="review in book.reviews" :key="review.id">
-        <p class="review-content">{{ review.content }}</p>
+      <div class="review-item" v-for="review in book.assessList" :key="review.userId">
+        <p class="review-content">{{ review.assess }}</p>
         <p class="review-author">
-          | by {{ review.author }}
-          <span v-for="level in 5" :key="level" class="star" :class="{'filled': level <= review.rating}">★</span>
+          | by {{ review.userId }} commented on {{ review.updateTime }}
+          <span v-for="level in 5" :key="level" class="star" :class="{'filled': level <= review.grade}">★</span>
         </p>
       </div>
     </div>
@@ -87,15 +96,10 @@
         <p class="left-align"><strong>用户名：</strong>{{ selectedUser.username }}</p>
         <div class="rating-container">
           <p class="left-align rating-text"><strong>评分：</strong></p>
-          <el-rate v-model="rating" :colors="['#99A9BF', '#F7BA2A', '#FF9900']"></el-rate>
+          <el-rate v-model="grade" :colors="['#99A9BF', '#F7BA2A', '#FF9900']"></el-rate>
         </div>
         <p class="left-align"><strong>填写书评：</strong></p>
-        <el-input
-          type="textarea"
-          v-model="review"
-          placeholder="请输入书评"
-          :rows="5"
-        ></el-input>
+        <el-input type="textarea" v-model="assess" placeholder="请输入书评" :rows="5"></el-input>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="handleReturn" type="success" class="center-button">确认</el-button>
@@ -110,19 +114,21 @@ export default {
   data() {
     return {
       book: {},
+      isFlipped: false,
       isDialogVisible: false,
       selectedUser: {},
       starred: false,
       borrowed: false,
+      lendId: null,
       borrowDays: 20,
-      rating: 0,
-      review: ""
+      grade: null,
+      assess: "",
     };
   },
   computed: {
     _isUser() {
       return this.$store.state.role == "user";
-    }
+    },
   },
   async created() {
     const bookId = this.$route.params.id;
@@ -133,27 +139,54 @@ export default {
       this.selectedUser = this.$store.state.userDetails;
       await this.$store.dispatch("fetchUserBorrowHistory");
       this.borrowed = false;
-      for (let borrowedBook in this.$store.state.userBorrowHistory) {
-        if (borrowedBook.isBack == 0 && borrowedBook.id == bookId) {
+      for (let borrowedBook of this.$store.state.userBorrowHistory) {
+        if (borrowedBook.isBack == 0 && borrowedBook.bookId == bookId) {
           this.borrowed = true;
-          break;
+          this.lendId = borrowedBook.id;
+        } 
+      }
+      await this.$store.dispatch("fetchUserLikes");
+      this.starred = false;
+      for (let likedBook of this.$store.state.userLikes) {
+        if (likedBook.bookId == bookId) {
+          this.starred = true;
         }
       }
-      console.log(JSON.stringify(this.book));
-      console.log(JSON.stringify(this.selectedUser));
-      console.log(this.borrowed);
     }
   },
   methods: {
+    toggleFlip() {
+      this.isFlipped = !this.isFlipped;
+    },
     async handleFavorite() {
       await this.$store.dispatch("setFavorite", !this.starred);
       this.starred = !this.starred;
+      const bookId = this.$route.params.id;
+      await this.$store.dispatch("fetchBookByIdByUser", bookId);
+      this.book = this.$store.state.bookDetails;
     },
     async handleBorrow() {
-      await this.$store.dispatch("borrowBook", this.borrowDays);
+      let success = await this.$store.dispatch("borrowBook", this.borrowDays);
+      if (success) {
+        this.isDialogVisible = false;
+        this.borrowed = true;
+        const bookId = this.$route.params.id;
+        await this.$store.dispatch("fetchBookByIdByUser", bookId);
+        this.book = this.$store.state.bookDetails;
+        window.location.reload();
+      }
     },
     async handleReturn() {
-      await this.$store.dispatch("returnBook", this.rating, this.review);
+      const behavior = {"id": this.lendId, "grade": this.grade, "assess": this.assess};
+      let success = await this.$store.dispatch("returnBook", behavior);
+      if (success) {
+        this.isDialogVisible = false;
+        this.borrowed = false;
+        const bookId = this.$route.params.id;
+        await this.$store.dispatch("fetchBookByIdByUser", bookId);
+        this.book = this.$store.state.bookDetails;
+        window.location.reload();
+      }
     },
     currentDate() {
       const now = new Date();
@@ -191,10 +224,54 @@ export default {
   margin-bottom: 20px;
 }
 
+.flip-container {
+  position: relative;
+  display: flex;
+  transform-style: preserve-3d;
+  transition: transform 0.5s;
+  transform-origin: center center;
+  cursor: pointer;
+  perspective: 1000px;
+  flex: 1;
+}
+
+.flip-container.flipped {
+  transform: rotateY(180deg);
+}
+
+.flipper {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.front,
+.back {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  justify-content: center;
+  align-items: center;
+}
+
+.front {
+  z-index: 2;
+  transform: rotateY(0deg);
+}
+
+.back {
+  transform: rotateY(180deg);
+}
+
 .book-image {
+  top: 0;
+  left: 0;
   width: 300px;
   height: auto;
-  margin-right: 40px;
 }
 
 .book-info {
