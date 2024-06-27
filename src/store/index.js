@@ -50,6 +50,9 @@ const store = new Vuex.Store({
     SET_NEW_BOOKS(state, books) {
       state.newBooks = books;
     },
+    SET_RECOMMEND_BOOKS(state, books) {
+      state.recommendBooks = books;
+    },
     SET_FILTERED_BOOKS(state, books) {
       state.filteredBooks = books;
     },
@@ -178,13 +181,18 @@ const store = new Vuex.Store({
       return success;
     },
     // 用户获取书籍列表
-    async fetchBooksByUser({ commit }) {
+    async fetchBooks({ commit }) {
       commit("SET_LOADING", true);
-      let success = false;
+      let success = false, path = this.state.role == "admin" ? " " : "/api/admins/books";
       try {
-        const response = await axios.get("/api/users/books", {
-          "page": 1,
-          "pageSize": 100
+        const response = await axios.get(path, {
+          headers: {
+            token: this.state.token
+          },
+          params: {
+            page: 1,
+            pageSize: 100
+          }
         });
         if (response.status == 200 && response.data.code == 1) success = true;
         commit('SET_BOOKS', response.data.data.rows);
@@ -215,13 +223,14 @@ const store = new Vuex.Store({
       return success;
     },
     // 用户借阅书籍
-    async borrowBook({ commit }) {
+    async borrowBook({ commit }, duration) {
       commit("SET_LOADING", true);
       let success = false;
       try {
         const response = await axios.get("/api/users/lend/saveLend", {
           userId: this.state.userDetails.id,
-          bookId: this.state.bookDetails.id
+          bookId: this.state.bookDetails.id,
+          duration: duration
         });
         if (response.status == 200 && response.data.code == 1) success = true;
       } catch (err) {
@@ -232,14 +241,14 @@ const store = new Vuex.Store({
       return success;
     },
     // 用户归还书籍
-    async returnBook({ commit }) {
+    async returnBook({ commit }, grade, assess) {
       commit("SET_LOADING", true);
       let success = false;
       try {
         const response = await axios.put("/api/users/lend/back", {
-          id: this.state.borrowDetails.id,
-          grade: this.state.borrowDetails.grade,
-          assess: this.state.borrowDetails.assess
+          id: this.state.bookDetails.id,
+          grade: grade,
+          assess: assess
         });
         if (response.status == 200 && response.data.code == 1) success = true;
       } catch (err) {
@@ -254,7 +263,11 @@ const store = new Vuex.Store({
       commit("SET_LOADING", true);
       let success = false;
       try {
-        const response = await axios.get(`/api/users/lends/${this.state.userDetails.id}`);
+        const response = await axios.get(`/api/users/lends/${this.state.userDetails.id}`, {
+          headers: {
+            token: this.state.token
+          }
+        });
         if (response.status == 200 && response.data.code == 1) {
           success = true;
           commit("SET_USER_BORROW_HISTORY", response.data.data.rows);
@@ -343,15 +356,45 @@ const store = new Vuex.Store({
       }
       return success;
     },
+    // 获取 recommend books
+    async fetchRecommendBooks({ commit }) {
+      commit("SET_LOADING", true);
+      let success = false, path = "/api/users/booksRecommend";
+      try {
+        const response = await axios.get(path, {
+          headers: {
+            token: this.state.token
+          }
+        });
+        if (response.status == 200 && response.data.code == 1) {
+          success = true;
+          commit("SET_RECOMMEND_BOOKS", response.data.data.listResult);
+        }
+      } catch (err) {
+        console.error("Failed to get recommend books:", err);
+      } finally {
+        commit("SET_LOADING", false);
+      }
+      return success;
+    },
     async searchBooks({ commit }, form) {
       commit("SET_LOADING", true);
       let success = false;
       try {
         const response = await axios.get("/api/users/books", {
-          page: 1,
-          pageSize: 100,
-          name: form.name,
-          author: form.author,
+          headers: {
+            token: this.state.token
+          },
+          params: {
+            page: 1,
+            pageSize: 100,
+            name: form.name,
+            author: form.author,
+            language: form.language,
+            lowerPrice: form.lowerPrice,
+            upperPrice: form.upperPrice,
+            category: form.category
+          }
         });
         if (response.status == 200 && response.data.code == 1) {
           success = true;

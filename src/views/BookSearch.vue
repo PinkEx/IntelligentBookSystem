@@ -1,11 +1,25 @@
 <template>
   <div class="book-search-container">
-    <el-form :inline="true" :model="searchForm" class="demo-form-inline">
+    <el-form :inline="true" ref="searchForm" :model="searchForm" class="demo-form-inline">
       <el-form-item label="书名">
         <el-input v-model="searchForm.name" placeholder="请输入书名"></el-input>
       </el-form-item>
       <el-form-item label="作者">
         <el-input v-model="searchForm.author" placeholder="请输入作者"></el-input>
+      </el-form-item>
+      <el-form-item label="语言">
+        <el-input v-model="searchForm.language" placeholder="请输入语言"></el-input>
+      </el-form-item>
+      <el-form-item label="价格区间">
+        <el-input-number v-model="searchForm.lowerPrice" :min="0" :max="200"></el-input-number>
+        元~
+        <el-input-number v-model="searchForm.upperPrice" :min="0" :max="200"></el-input-number>
+        元
+      </el-form-item>
+      <el-form-item label="出版区间">
+        <el-date-picker v-model="searchForm.beginPubDate" type="date"></el-date-picker>
+        ~
+        <el-date-picker v-model="searchForm.endPubDate" type="date"></el-date-picker>
       </el-form-item>
       <el-form-item label="类别">
         <el-select v-model="searchForm.category" placeholder="请选择类别">
@@ -65,6 +79,9 @@ export default {
       searchForm: {
         title: "",
         author: "",
+        language: "",
+        lowerPrice: "",
+        upperPrice: "",
         category: "",
         starred: "",
         borrowed: ""
@@ -96,10 +113,13 @@ export default {
       this.searchForm = {
         title: "",
         author: "",
+        language: "",
+        lowerPrice: "",
+        upperPrice: "",
         category: "",
         starred: "",
         borrowed: ""
-      };
+      },
       await this.handleSearch(this.searchForm);
     },
     handleClick(row) {

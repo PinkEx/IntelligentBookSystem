@@ -70,7 +70,11 @@
       <div v-if="selectedUser != {}">
         <p><strong>用户名：</strong> {{ selectedUser.username }}</p>
         <p><strong>借阅时间：</strong> {{ currentDate() }}</p>
-        <p><strong>（最迟）归还时间：</strong> {{ futureDate() }} </p>
+        <p>
+          <strong>借阅天数：</strong>
+          <el-input-number v-model="borrowDays" :min="7" :max="60" label="借阅天数"></el-input-number>
+        </p>
+        <p><strong>约定归还时间：</strong> {{ futureDate() }} </p>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="handleBorrow" type="success" class="center-button">确认</el-button>
@@ -110,6 +114,7 @@ export default {
       selectedUser: {},
       starred: false,
       borrowed: false,
+      borrowDays: 20,
       rating: 0,
       review: ""
     };
@@ -126,10 +131,18 @@ export default {
       this.book = this.$store.state.bookDetails;
       await this.$store.dispatch("fetchUserDetails", this.$store.state.userId);
       this.selectedUser = this.$store.state.userDetails;
-      console.log(JSON.stringify(this.book), JSON.stringify(this.selectedUser));
+      await this.$store.dispatch("fetchUserBorrowHistory");
+      this.borrowed = false;
+      for (let borrowedBook in this.$store.state.userBorrowHistory) {
+        if (borrowedBook.isBack == 0 && borrowedBook.id == bookId) {
+          this.borrowed = true;
+          break;
+        }
+      }
+      console.log(JSON.stringify(this.book));
+      console.log(JSON.stringify(this.selectedUser));
+      console.log(this.borrowed);
     }
-    // check borrow state
-    this.borrowed = false;
   },
   methods: {
     async handleFavorite() {
@@ -137,10 +150,10 @@ export default {
       this.starred = !this.starred;
     },
     async handleBorrow() {
-      await this.$store.dispatch("borrowBook");
+      await this.$store.dispatch("borrowBook", this.borrowDays);
     },
     async handleReturn() {
-      await this.$store.dispatch("returnBook");
+      await this.$store.dispatch("returnBook", this.rating, this.review);
     },
     currentDate() {
       const now = new Date();
@@ -153,7 +166,7 @@ export default {
     futureDate() {
       const now = new Date();
       const futureDate = new Date(now);
-      futureDate.setDate(now.getDate() + 15);
+      futureDate.setDate(now.getDate() + this.borrowDays);
       const year = futureDate.getFullYear();
       const month = String(futureDate.getMonth() + 1).padStart(2, '0');
       const date = String(futureDate.getDate()).padStart(2, '0');
