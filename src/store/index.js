@@ -112,6 +112,48 @@ const store = new Vuex.Store({
       }
       return success;
     },
+    // 管理员拉黑用户
+    async setBlacklistedUser({ commit }, id) {
+      commit("SET_LOADING", true);
+      let success = false;
+      try {
+        const response = await axios.put("/api/admins/class/user/setIsEnabled", {
+          id: id,
+          isEnabled: false
+        }, {
+          headers: {
+            token: this.state.token
+          }
+        });
+        if (response.status == 200 && response.data.code == 1) success = true;
+      } catch (err) {
+        console.error(err);
+      } finally {
+        commit("SET_LOADING", false);
+      }
+      return success;
+    },
+    // 管理员解除拉黑用户
+    async setUnblockedUser({ commit }, id) {
+      commit("SET_LOADING", true);
+      let success = false;
+      try {
+        const response = await axios.put("/api/admins/class/user/setIsEnabled", {
+          id: id,
+          isEnabled: true
+        }, {
+          headers: {
+            token: this.state.token
+          }
+        });
+        if (response.status == 200 && response.data.code == 1) success = true;
+      } catch (err) {
+        console.error(err);
+      } finally {
+        commit("SET_LOADING", false);
+      }
+      return success;
+    },
     // 用户登录
     async login({ commit }, userData) {
       commit("SET_LOADING", true);
