@@ -20,6 +20,7 @@ const store = new Vuex.Store({
     filteredBooks: [],
     bookDetails: {},
     // for users
+    userNotifications: [],
     recommendBooks: [],
     userAvatarUrl: "",
     userLikes: [],
@@ -35,6 +36,9 @@ const store = new Vuex.Store({
     SET_USER_DETAILS(state, user) {
       state.userDetails = user;
     },
+    SET_USER_NOTIFICATIONS(state, notifications) {
+      state.userNotifications = notifications;
+    },
     SET_AVATAR_URL(state, url) {
       state.userAvatarUrl = url;
     },
@@ -45,6 +49,18 @@ const store = new Vuex.Store({
       state.role = null;
       state.token = null;
       state.userId = null;
+      state.books = [];
+      state.trendingBooks = [];
+      state.newBooks = [];
+      state.filteredBooks = [];
+      state.bookDetails = {};
+      state.userNotifications = [];
+      state.recommendBooks = [];
+      state.userAvatarUrl = "";
+      state.userLikes = [];
+      state.userBorrowHistory = [];
+      state.users = [];
+      state.userDetails = {};
     },
     SET_BOOKS(state, books) {
       state.books = books;
@@ -79,7 +95,6 @@ const store = new Vuex.Store({
     },
   },
   actions: {
-
     // 管理员获取用户列表
     async fetchUsers({ commit }) {
       commit("SET_LOADING", true);
@@ -141,8 +156,8 @@ const store = new Vuex.Store({
     },
     // 用户登出
     logout({ commit }) {
+      localStorage.clear();
       commit("SET_LOGGED_OUT");
-      commit("SET_TOKEN", null);
     },
     // 获取用户个人详细信息
     async fetchUserDetails({ commit }, id) {
@@ -154,13 +169,57 @@ const store = new Vuex.Store({
             token: this.state.token
           }
         });
-        commit("SET_USER_DETAILS", response.data.data);
-        if (response.status == 200 && response.data.code == 1) success = true;
+        if (response.status == 200 && response.data.code == 1) {
+          commit("SET_USER_DETAILS", response.data.data);
+          success = true;
+        }
       } catch (err) {
         console.error("Failed to fetch user details:", err);
       } finally {
         commit("SET_LOADING", false);
       }
+      return success;
+    },
+    // 获取用户通知
+    async fetchUserNotifications({ commit }) {
+      commit("SET_LOADING", true);
+      let success = false;
+      try {
+        const response = await axios.get(`/api/users/notifications/${this.state.userDetails.id}`, {
+          headers: {
+            token: this.state.token
+          }
+        });
+        if (response.status == 200 && response.data.code == 1) {
+          success = true;
+          commit("SET_USER_NOTIFICATIONS", response.data.data.rows);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user notifications:", err);
+      } finally {
+        commit("SET_LOADING", false);
+      }
+      return success;
+    },
+    // 标记通知已读
+    async setNotificationRead({ commit }, id) {
+      commit("SET_LOADING", true);
+      let success = false;
+      try {
+        const response = await axios.put(`/api/users/notifications/setIsRead`, {
+          ids: [id]
+        }, {
+          headers: {
+            token: this.state.token
+          }
+        });
+        if (response.status == 200 && response.data.code == 1) success = true;
+      } catch (err) {
+        console.error("Failed to set notification read:", err);
+      } finally {
+        commit("SET_LOADING", false);
+      }
+      if (success) success = await this.dispatch("fetchUserNotifications");
       return success;
     },
     // 更新用户个人信息

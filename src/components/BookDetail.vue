@@ -5,10 +5,12 @@
       <div class="flip-container" :class="{ flipped: isFlipped }" @click="toggleFlip">
         <div class="flipper">
           <div class="front">
-            <el-image v-if="!isFlipped" :src="book.image" class="book-image" />
+            <img v-if="!isFlipped" :src="book.image" class="book-image" />
           </div>
           <div class="back">
-            <el-image v-if="isFlipped" :src="book.image" class="book-image" />
+            <div v-if="isFlipped" class="wordcloud-container">
+              <word-cloud :data="this.tagList" :options="options" name="word-cloud" />
+            </div>
           </div>
         </div>
       </div>
@@ -110,7 +112,11 @@
 </template>
 
 <script>
+import WordCloud from 'vue-wordcloud';
 export default {
+  components: {
+    WordCloud,
+  },
   data() {
     return {
       book: {},
@@ -123,6 +129,14 @@ export default {
       borrowDays: 20,
       grade: null,
       assess: "",
+      tagList: [],
+      options: {
+        fontFamily: 'Roboto, sans-serif',
+        fontWeight: 'bold',
+        colors: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'],
+        minSize: 1, // 设置最小尺寸为1
+        maxSize: 100, // 设置最大尺寸为100或更大
+      },
     };
   },
   computed: {
@@ -153,6 +167,40 @@ export default {
         }
       }
     }
+    this.tagList = [
+      {name: 'Java', value: 100},
+      {name: 'Spring', value: 80},
+      {name: 'Hibernate', value: 70},
+      {name: 'JavaScript', value: 60},
+      {name: 'Vue', value: 50},
+      {name: 'TypeScript', value: 40},
+      {name: 'HTML', value: 30},
+      {name: 'CSS', value: 20},
+      {name: 'MySQL', value: 10},
+      {name: 'MongoDB', value: 5},
+      {name: 'Redis', value: 3},
+      {name: 'Spring Boot', value: 2},
+      {name: 'Spring Cloud', value: 1},
+      {name: 'Docker', value: 1},
+      {name: 'Kubernetes', value: 1},
+      {name: 'CI/CD', value: 1},
+      {name: 'Jenkins', value: 1},
+      {name: 'Git', value: 1},
+      {name: 'Nginx', value: 1},
+      {name: 'Apache', value: 1},
+      {name: 'Tomcat', value: 1},
+      {name: 'Jira', value: 1},
+      {name: 'Confluence', value: 1},
+      {name: 'Jenkins X', value: 1},
+      {name: 'ArgoCD', value: 1},
+      {name: 'Prometheus', value: 1},
+      {name: 'Grafana', value: 1},
+      {name: 'Istio', value: 1},
+      {name: 'OpenTracing', value: 1},
+      {name: 'Zipkin', value: 1},
+      {name: 'Hystrix', value: 1},
+      {name: 'Sentinel', value: 1},
+    ]
   },
   methods: {
     toggleFlip() {
@@ -268,6 +316,13 @@ export default {
 }
 
 .book-image {
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: auto;
+}
+
+.wordcloud-container {
   top: 0;
   left: 0;
   width: 300px;

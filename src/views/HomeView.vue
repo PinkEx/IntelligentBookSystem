@@ -124,13 +124,14 @@ export default {
     this.newBooks = this.$store.state.newBooks;
 
     if (this._isReader) {
-      this.recommendBook = [];
+      await this.$store.dispatch("fetchRecommendBooks");
+      this.recommendBook = this.$store.state.recommendBooks;
     }
     console.log(JSON.stringify(this.trendingBooks), JSON.stringify(this.newBooks), JSON.stringify(this.recommendBooks));
   },
   computed: {
     _isReader() {
-      return this.$store.state.userType === "user";
+      return this.$store.state.role === "user";
     },
   },
 }
