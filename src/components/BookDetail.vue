@@ -71,7 +71,7 @@
       <div class="review-item" v-for="review in book.assessList" :key="review.userId">
         <p class="review-content">{{ review.assess }}</p>
         <p class="review-author">
-          | by {{ review.userId }} commented on {{ review.updateTime }}
+          | by {{ review.userName }} commented on {{ review.updateTime }}
           <span v-for="level in 5" :key="level" class="star" :class="{'filled': level <= review.grade}">★</span>
         </p>
       </div>

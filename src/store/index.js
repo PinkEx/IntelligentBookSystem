@@ -115,7 +115,7 @@ const store = new Vuex.Store({
     // 用户登录
     async login({ commit }, userData) {
       commit("SET_LOADING", true);
-      let success = false, role = userData.username == "admin" ? "admin": "user";
+      let success = false, role = userData.username == "yqy" ? "admin": "user";
       try {
         const response = await axios.post("/api/login", {
           username: userData.username,

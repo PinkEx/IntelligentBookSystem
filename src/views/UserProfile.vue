@@ -2,8 +2,14 @@
   <div class="profile-container">
     <el-form ref="profileForm" :model="profileForm" :rules="rules" label-width="100px" class="profile-form">
       <el-form-item label="头像">
-        <el-upload class="avatar-uploader" action="/api/upload" :headers="{ token: $store.state.token }"
-          :show-file-list="false" :on-success="handleAvatarSuccess" :disabled="!isModifying">
+        <el-upload class="avatar-uploader"
+          action="/api/upload"
+          name="image"
+          :headers="{ token: $store.state.token }"
+          :show-file-list="false"
+          :on-success="handleAvatarSuccess"
+          :disabled="!isModifying"
+        >
           <img v-if="profileForm.image" :src="profileForm.image" class="avatar">
           <i v-else class="el-icon-plus avatar-uploader-icon"></i>
         </el-upload>
@@ -112,8 +118,9 @@ export default {
   methods: {
     handleAvatarSuccess(res, file) {
       console.log("####", res, file);
-      this.profileForm.image = URL.createObjectURL(file.raw);
-      console.log(file, this.profileForm.image);
+      this.$store.commit("SET_AVATAR_URL", res.data);
+      this.profileForm.image = res.data;
+      console.log("####", this.$store.state.userAvatarUrl);
     },
     async handleSave() {
       let success = await this.$store.dispatch("updateUserDetails", this.profileForm);
