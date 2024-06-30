@@ -1,8 +1,8 @@
-import axios from 'axios'
-import Vue from 'vue'
-import Vuex from 'vuex'
-import createPersistedState from 'vuex-persistedstate';
-import { jwtDecode } from 'jwt-decode';
+import axios from "axios"
+import Vue from "vue"
+import Vuex from "vuex"
+import createPersistedState from "vuex-persistedstate";
+import { jwtDecode } from "jwt-decode";
 
 Vue.use(Vuex)
 
@@ -20,6 +20,7 @@ const store = new Vuex.Store({
     filteredBooks: [],
     bookDetails: {},
     // for users
+    userDetails: {},
     userNotifications: [],
     recommendBooks: [],
     userAvatarUrl: "",
@@ -27,14 +28,21 @@ const store = new Vuex.Store({
     userBorrowHistory: [],
     // for admins
     users: [],
-    userDetails: {},
+    lendHistory: [],
+    tempUserDetails: {},
   },
   mutations: {
     SET_USERS(state, users) {
       state.users = users;
     },
+    SET_LEND_HISTORY(state, history) {
+      state.lendHistory = history;
+    },
     SET_USER_DETAILS(state, user) {
       state.userDetails = user;
+    },
+    SET_TEMP_USER_DETAILS(state, user) {
+      state.tempUserDetails = user;
     },
     SET_USER_NOTIFICATIONS(state, notifications) {
       state.userNotifications = notifications;
@@ -100,13 +108,38 @@ const store = new Vuex.Store({
       commit("SET_LOADING", true);
       let success = false;
       try {
-        const response = await axios.get("/api/admins/users");
+        const response = await axios.get("/api/admins/users", {
+          headers: {
+            token: this.state.token
+          }
+        });
         if (response.status == 200 && response.data.code == 1) {
           success = true;
-          commit('SET_USERS', response.data.data.rows);
+          commit("SET_USERS", response.data.data.rows);
         }
       } catch (err) {
         console.error("Failed to fetch users:", err);
+      } finally {
+        commit("SET_LOADING", false);
+      }
+      return success;
+    },
+    // 管理员获取借阅记录
+    async fetchLendHistory({ commit }) {
+      commit("SET_LOADING", true);
+      let success = false;
+      try {
+        const response = await axios.get("/api/admins/lends", {
+          headers: {
+            token: this.state.token
+          }
+        });
+        if (response.status == 200 && response.data.code == 1) {
+          success = true;
+          commit("SET_LEND_HISTORY", response.data.data.rows);
+        }
+      } catch (err) {
+        console.error("Failed to fetch lend history:", err);
       } finally {
         commit("SET_LOADING", false);
       }
@@ -117,9 +150,9 @@ const store = new Vuex.Store({
       commit("SET_LOADING", true);
       let success = false;
       try {
-        const response = await axios.put("/api/admins/class/user/setIsEnabled", {
+        const response = await axios.put("/api/admins/user/setIsEnabled", {
           id: id,
-          isEnabled: false
+          isEnabled: 0
         }, {
           headers: {
             token: this.state.token
@@ -138,9 +171,9 @@ const store = new Vuex.Store({
       commit("SET_LOADING", true);
       let success = false;
       try {
-        const response = await axios.put("/api/admins/class/user/setIsEnabled", {
+        const response = await axios.put("/api/admins/user/setIsEnabled", {
           id: id,
-          isEnabled: true
+          isEnabled: 1
         }, {
           headers: {
             token: this.state.token
@@ -149,6 +182,59 @@ const store = new Vuex.Store({
         if (response.status == 200 && response.data.code == 1) success = true;
       } catch (err) {
         console.error(err);
+      } finally {
+        commit("SET_LOADING", false);
+      }
+      return success;
+    },
+    // 管理员根据id获取书籍信息
+    async fetchBookByIdByAdmin({ commit }, id) {
+      commit("SET_LOADING", true);
+      let success = false;
+      try {
+        const response = await axios.get(`/api/admins/book/${id}`, {
+          headers: {
+            token: this.state.token
+          }
+        });
+        if (response.status == 200 && response.data.code == 1) success = true;
+        commit("SET_BOOK_DETAILS", response.data.data);
+      } catch (err) {
+        console.error("Failed to fetch book by id", err);
+      } finally {
+        commit("SET_LOADING", false);
+      }
+      return success;
+    },
+    async deleteBook({ commit }, id) {
+      commit("SET_LOADING", true);
+      let success = false;
+      try {
+        const response = await axios.delete(`/api/admins/books/${[id]}`, {
+          headers: {
+            token: this.state.token
+          }
+        });
+        if (response.status == 200 && response.data.code == 1) success = true;
+      } catch (err) {
+        console.error("Failed to delete book:", err);
+      } finally {
+        commit("SET_LOADING", false);
+      }
+      return success;
+    },
+    async insertBook({ commit }, book) {
+      commit("SET_LOADING", true);
+      let success = false;
+      try {
+        const response = await axios.post("/api/admins/book/saveBook", book, {
+          headers: {
+            token: this.state.token
+          }
+        });
+        if (response.status == 200 && response.data.code == 1) success = true;
+      } catch (err) {
+        console.error("Failed to insert book:", err);
       } finally {
         commit("SET_LOADING", false);
       }
@@ -175,6 +261,14 @@ const store = new Vuex.Store({
         console.error(err);
       } finally {
         commit("SET_LOADING", false);
+      }
+      if (success) {
+        if (role == "admin") {
+          commit("SET_USER_DETAILS", {
+            id: this.state.userId,
+            username: userData.username
+          });
+        }
       }
       return success;
     },
@@ -204,7 +298,7 @@ const store = new Vuex.Store({
     // 获取用户个人详细信息
     async fetchUserDetails({ commit }, id) {
       commit("SET_LOADING", true);
-      let success = false, path = this.role == "admin" ? `/api/admins/users/${id}` : `/api/users/${id}`;
+      let success = false, path = this.state.role == "admin" ? `/api/admins/user/${id}` : `/api/users/${id}`;
       try {
         const response = await axios.get(path, {
           headers: {
@@ -212,7 +306,11 @@ const store = new Vuex.Store({
           }
         });
         if (response.status == 200 && response.data.code == 1) {
-          commit("SET_USER_DETAILS", response.data.data);
+          if (this.state.userId != id) {
+            commit("SET_TEMP_USER_DETAILS", response.data.data);
+          } else {
+            commit("SET_USER_DETAILS", response.data.data);
+          }
           success = true;
         }
       } catch (err) {
@@ -294,18 +392,15 @@ const store = new Vuex.Store({
     // 用户获取书籍列表
     async fetchBooks({ commit }) {
       commit("SET_LOADING", true);
-      let success = false, path = this.state.role == "admin" ? " " : "/api/admins/books";
+      let success = false, path = this.state.role == "admin" ? "/api/admins/books" : "/api/users/books";
       try {
         const response = await axios.get(path, {
-          page: 1,
-          pageSize: 100
-        }, {
           headers: {
             token: this.state.token
           }
         });
         if (response.status == 200 && response.data.code == 1) success = true;
-        commit('SET_BOOKS', response.data.data.rows);
+        commit("SET_BOOKS", response.data.data.rows);
       } catch (err) {
         console.error("Failed to fetch books:", err);
       } finally {
@@ -486,7 +581,7 @@ const store = new Vuex.Store({
     // 获取 recommend books
     async fetchRecommendBooks({ commit }) {
       commit("SET_LOADING", true);
-      let success = false, path = "/api/users/booksRecommend";
+      let success = false, path = `/api/users/booksRecommend?id=${this.state.userDetails.id}`;
       try {
         const response = await axios.get(path, {
           headers: {
@@ -495,7 +590,7 @@ const store = new Vuex.Store({
         });
         if (response.status == 200 && response.data.code == 1) {
           success = true;
-          commit("SET_RECOMMEND_BOOKS", response.data.data.listResult);
+          commit("SET_RECOMMEND_BOOKS", response.data.data);
         }
       } catch (err) {
         console.error("Failed to fetch recommend books:", err);
@@ -506,7 +601,7 @@ const store = new Vuex.Store({
     },
     async searchBooks({ commit }, form) {
       commit("SET_LOADING", true);
-      let success = false, path = `/api/users/books?name=${form.name}&author=${form.author}&language=${form.language}&lowerPrice=${form.lowerPrice}&upperPrice=${form.upperPrice}&category=${form.category}`;
+      let success = false, path = `/api/${this.state.role == "admin" ? "admins" : "users"}/books?name=${form.name}&author=${form.author}&language=${form.language}&lowerPrice=${form.lowerPrice}&upperPrice=${form.upperPrice}&category=${form.category}`;
       try {
         const response = await axios.get(path, {
           headers: {

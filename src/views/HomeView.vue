@@ -1,7 +1,7 @@
 <template>
   <div class="home-view">
     <header class="header">
-      <h1>Welcome Home</h1>
+      <h1>Welcome Home{{ this.$store.state.token != null ? ", " + this.$store.state.userDetails.username : "" }}</h1>
     </header>
     <section class="content">
       <div class="welcome-message">
@@ -63,7 +63,7 @@
           You may also like
         </h2>
         <swiper :options="swiperOptions">
-          <swiper-slide class="book-item" v-for="book in recommendBook" :key="book.id">
+          <swiper-slide class="book-item" v-for="book in recommendBooks" :key="book.id">
             <img :src="book.image" :alt="book.name" class="book-image" />
             <router-link :to="`/book/${book.id}`" class="book-link">
               <h3 class="book-name">{{ book.name }}</h3>
@@ -83,13 +83,12 @@
 </template>
 
 <script>
-import { Swiper, SwiperSlide, Pagination, Navigation, directive } from 'vue-awesome-swiper'
-import 'swiper/css/swiper.css'
+import { Swiper, SwiperSlide, Pagination, Navigation, directive } from "vue-awesome-swiper"
+import "swiper/css/swiper.css"
 
 Swiper.use([Pagination, Navigation]);
 
 export default {
-  name: 'HomeView',
   components: {
     Swiper,
     SwiperSlide
@@ -106,12 +105,12 @@ export default {
         slidesPerView: "auto",
         spaceBetween: 20,
         pagination: {
-          el: '.swiper-pagination',
+          el: ".swiper-pagination",
           clickable: true,
         },
         navigation: {
-          nextEl: '.swiper-button-next',
-          prevEl: '.swiper-button-prev',
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
         },
       },
     };
@@ -125,9 +124,11 @@ export default {
 
     if (this._isReader) {
       await this.$store.dispatch("fetchRecommendBooks");
-      this.recommendBook = this.$store.state.recommendBooks;
+      this.recommendBooks = this.$store.state.recommendBooks;
     }
-    console.log(JSON.stringify(this.trendingBooks), JSON.stringify(this.newBooks), JSON.stringify(this.recommendBooks));
+    console.log(JSON.stringify(this.trendingBooks));
+    console.log(JSON.stringify(this.newBooks));
+    console.log(JSON.stringify(this.recommendBooks));
   },
   computed: {
     _isReader() {
@@ -150,7 +151,7 @@ export default {
   width: 100%;
   text-align: center;
   font-style: normal;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande", "Lucida Sans Unicode", Geneva, Verdana, sans-serif
 }
 
 .sub-header {
@@ -159,7 +160,7 @@ export default {
   text-align: center;
   font-style: italic;
   font-size: 24px;
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif
 }
 
 .content {
@@ -176,7 +177,7 @@ export default {
   background-size: auto;
   background-repeat: no-repeat;
   background-position: center;
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
   font-weight: bolder;
   width: 100%;
   color: rgb(95, 127, 63);
@@ -193,7 +194,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('@/assets/envelope.png');
+  background-image: url("@/assets/envelope.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;

@@ -17,18 +17,18 @@
 </template>
 
 <script>
-import 'swiper/css/swiper.css';
+import "swiper/css/swiper.css";
 
 export default {
   data() {
     return {
       loginForm: {
-        username: '',
-        password: '',
+        username: "",
+        password: "",
       },
       rules: {
-        username: [{ required: true, message: 'Please input your username', trigger: 'blur' }],
-        password: [{ required: true, message: 'Please input your password', trigger: 'blur' }],
+        username: [{ required: true, message: "Please input your username", trigger: "blur" }],
+        password: [{ required: true, message: "Please input your password", trigger: "blur" }],
       },
     };
   },
@@ -38,7 +38,10 @@ export default {
       const password = this.loginForm.password;
       try {
         await this.$store.dispatch("login", { username, password });
-        if (this.$store.state.role != null) this.$router.push("/");
+        if (this.$store.state.role == "user") {
+          await this.$store.dispatch("fetchUserDetails", this.$store.state.userId);
+        }
+        this.$router.push("/");
       } catch (err) {
         alert(err);
       }

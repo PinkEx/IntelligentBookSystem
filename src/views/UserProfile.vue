@@ -77,27 +77,27 @@ export default {
       },
       rules: {
         email: [
-          { message: 'Please input your email', trigger: 'blur' },
+          { message: "Please input your email", trigger: "blur" },
           { validator: (rule, value, callback) => {
               const emailReg = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
               if (!emailReg.test(value)) {
-                callback(new Error('请输入正确的邮箱地址'));
+                callback(new Error("请输入正确的邮箱地址"));
               } else {
                 callback();
               }
-            }, trigger: 'blur'
+            }, trigger: "blur"
           }
         ],
         phone: [
-          { message: 'Please input your phone number', trigger: 'blur' },
+          { message: "Please input your phone number", trigger: "blur" },
           { validator: (rule, value, callback) => {
               const phoneReg = /^1[3-9]\d{9}$/;
               if (!phoneReg.test(value)) {
-                callback(new Error('请输入正确的手机号'));
+                callback(new Error("请输入正确的手机号"));
               } else {
                 callback();
               }
-            }, trigger: 'blur'
+            }, trigger: "blur"
           }
         ],
       },
@@ -125,13 +125,13 @@ export default {
     async handleSave() {
       let success = await this.$store.dispatch("updateUserDetails", this.profileForm);
       if (success) {
-        this.$message.success('保存成功');
+        this.$message.success("保存成功");
         this.originalProfile = this.$store.state.userDetails;
       }
       this.isModifying = false;
     },
     handleReset() {
-      this.$refs['profileForm'].resetFields();
+      this.$refs["profileForm"].resetFields();
     }
   }
 };

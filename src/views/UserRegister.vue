@@ -24,22 +24,22 @@ export default {
   data() {
     return {
       registerForm: {
-        username: '',
-        password: '',
-        confirmPassword: '',
+        username: "",
+        password: "",
+        confirmPassword: "",
       },
       rules: {
-        username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+        username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
+        password: [{ required: true, message: "请输入密码", trigger: "blur" }],
         confirmPassword: [
-          { required: true, message: '请确认密码', trigger: 'blur' },
+          { required: true, message: "请确认密码", trigger: "blur" },
           { validator: (rule, value, callback) => {
               if (value !== this.registerForm.password) {
-                callback(new Error('两次输入的密码不一致'));
+                callback(new Error("两次输入的密码不一致"));
               } else {
                 callback();
               }
-            }, trigger: 'blur'
+            }, trigger: "blur"
           }
         ]
       }

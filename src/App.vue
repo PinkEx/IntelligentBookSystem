@@ -2,9 +2,9 @@
   <div id="app">
     <el-menu :default-active="$route.path" mode="horizontal" class="menu-wrapper" router>
       <el-menu-item index="/">首页</el-menu-item>
-      <el-menu-item v-if="_isAdmin" index="/borrowManage">借阅管理</el-menu-item>
       <el-menu-item v-if="_isAdmin" index="/userManage">用户管理</el-menu-item>
-      <el-menu-item v-if="_isUser || _isAdmin" index="/bookSearch">书籍搜索</el-menu-item>
+      <el-menu-item v-if="_isUser || _isAdmin" index="/bookSearch">{{ _isUser? "书籍搜索" : "书籍管理"}}</el-menu-item>
+      <el-menu-item v-if="_isAdmin" index="/dataCollection">数据统计</el-menu-item>
       <el-menu-item v-if="_isUser" index="/borrowHistory">借阅历史</el-menu-item>
       <el-submenu v-if="!_isLoggedIn" index="0">
         <template slot="title">注册 & 登录</template>
@@ -24,10 +24,10 @@
 </template>
 
 <script>
-import NotificationBoard from '@/components/NotificationBoard.vue';
+import NotificationBoard from "@/components/NotificationBoard.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     NotificationBoard
   },
@@ -50,7 +50,7 @@ export default {
   methods: {
     _logout() {
       this.$router.push("/");
-      this.$store.dispatch('logout');
+      this.$store.dispatch("logout");
     },
     toggleNotification() {
       this.isNotificationVisible = !this.isNotificationVisible;

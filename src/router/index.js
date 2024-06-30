@@ -4,6 +4,7 @@ import Router from "vue-router"
 import HomeView from "@/views/HomeView.vue"
 import BookSearch from "@/views/BookSearch.vue"
 import BorrowHistory from "@/views/BorrowHistory.vue"
+import DataCollection from "@/views/DataCollection.vue"
 import UserManage from "@/views/UserManage.vue"
 import UserLogin from "@/views/UserLogin"
 import UserRegister from "@/views/UserRegister.vue"
@@ -26,6 +27,7 @@ export default new Router({
     { path: "/profile", name: "profile", component: UserProfile },
     { path: "/book/:id", name: "BookDetail", component: BookDetail },
     { path: "/userManage", name: "userManage", component: UserManage },
+    { path: "/dataCollection", name: "dataCollection", component: DataCollection },
     { path: "/bookSearch", name: "bookSearch", component: BookSearch },
     { path: "/borrowHistory", name: "borrowHistory", component: BorrowHistory }
   ]

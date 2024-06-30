@@ -1,9 +1,9 @@
 <template>
   <div class="borrow-history-calendar">
     <el-card class="box-card">
-      <div slot="header" class="clearfix">
+      <!-- <div slot="header" class="clearfix">
         <span>借阅历史</span>
-      </div>
+      </div> -->
       <el-calendar>
         <template v-slot:dateCell="{ date, data }">
           <div class="custom-date-cell">
