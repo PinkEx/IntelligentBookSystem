@@ -4,26 +4,23 @@
 
 ## 推荐首页
 
-![image-20241103121242857](C:\Users\psimonw\AppData\Roaming\Typora\typora-user-images\image-20241103121242857.png)
-
-![image-20241103121307428](C:\Users\psimonw\AppData\Roaming\Typora\typora-user-images\image-20241103121307428.png)
-
-![image-20241103121321791](C:\Users\psimonw\AppData\Roaming\Typora\typora-user-images\image-20241103121321791.png)
+![](imgs/i01.png)
+![](imgs/i02.png)
+![](imgs/i03.png)
 
 ## 书籍详情
 
-![image-20241103121353070](C:\Users\psimonw\AppData\Roaming\Typora\typora-user-images\image-20241103121353070.png)
-
-![image-20241103121410637](C:\Users\psimonw\AppData\Roaming\Typora\typora-user-images\image-20241103121410637.png)
+![](imgs/i04.png)
+![](imgs/i05.png)
 
 ## 书籍搜索
 
-![image-20241103121457517](C:\Users\psimonw\AppData\Roaming\Typora\typora-user-images\image-20241103121457517.png)
+![](imgs/i06.png)
 
 ## 借阅详情
 
-![image-20241103121527144](C:\Users\psimonw\AppData\Roaming\Typora\typora-user-images\image-20241103121527144.png)
+![](imgs/i07.png)
 
 ## 数据统计
 
-![image-20241103121557095](C:\Users\psimonw\AppData\Roaming\Typora\typora-user-images\image-20241103121557095.png)
+![](imgs/i08.png)
